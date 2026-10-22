@@ -1,0 +1,34 @@
+# Stock Scorecard Project
+
+## Week 3: Stock Classification Using XGBoost
+
+### Project Overview
+This project uses the XGBoost machine learning algorithm to classify stock data from a labeled CSV dataset.
+
+### Objective
+The objective is to train a classification model using labeled stock data and evaluate its performance on unseen data.
+
+### Technologies Used
+- Python
+- Pandas
+- NumPy
+- XGBoost
+- Scikit-learn
+- Google Colab
+
+### Workflow
+1. Load the labeled CSV dataset.
+2. Perform data preprocessing.
+3. Separate features and target labels.
+4. Split the data into training and testing sets.
+5. Train the XGBoost classification model.
+6. Evaluate the model using suitable classification metrics.
+
+### Notebook
+`Week2_XGBoost_Stock_Classification.ipynb`
+
+### Project Status
+Week 2 task completed as part of the internship project.
+
+### Disclaimer
+This project is for educational purposes only and is not financial advice.
