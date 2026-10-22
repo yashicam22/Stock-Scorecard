@@ -1,0 +1,31 @@
+
+
+### Project Overview
+This task focuses on preparing stock market features from historical stock data for machine learning classification using the XGBoost algorithm.
+
+### Features Created
+- **5-Day Return (`ret_5d`):** Measures stock price change over 5 trading periods.
+- **20-Day Return (`ret_20d`):** Measures stock price change over 20 trading periods.
+- **Price vs SMA20 (`px_sma20`):** Compares the closing price with the 20-day Simple Moving Average.
+- **Price vs SMA50 (`px_sma50`):** Compares the closing price with the 50-day Simple Moving Average.
+- **EMA vs SMA (`ema_sma`):** Compares the 20-day Exponential Moving Average with the 20-day Simple Moving Average.
+- **Price vs VWAP (`px_vwap`):** Compares the closing price with the 20-day Volume Weighted Average Price.
+- **Normalized MACD (`macd_n`):** Measures the difference between MACD and its signal line relative to the closing price.
+- **Volatility (`vol_20`):** Calculates rolling 20-day return volatility.
+- **Relative Volume (`rel_vol`):** Compares current trading volume with its rolling 20-day average.
+- **RSI14:** Uses the 14-period Relative Strength Index as a technical indicator.
+
+### Technologies Used
+- Python
+- Pandas
+- Google Colab
+- XGBoost (for the classification stage)
+
+### Objective
+To transform raw stock market data into meaningful numerical features that can help a machine learning model identify patterns in stock price and trading activity.
+
+### Important Note
+Rolling calculations may produce missing values at the beginning of each stock's data. These should be handled before model training. Features must also be aligned with the prediction target to avoid data leakage.
+
+### Project Status
+Feature engineering for stock classification.
