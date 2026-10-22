@@ -1,0 +1,862 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyOYQoFrpv4YXqopuAAYBZsd",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/yashicam22/Stock-Scorecard/blob/main/%20week3_XGBoost_Stock_Classification\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 73
+        },
+        "id": "oXnXwYyNl7hn",
+        "outputId": "3080f39f-daf2-4c22-f80c-3ef23457225a"
+      },
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<IPython.core.display.HTML object>"
+            ],
+            "text/html": [
+              "\n",
+              "     <input type=\"file\" id=\"files-e44cd95a-7960-4fd1-959f-b61925910ea5\" name=\"files[]\" multiple disabled\n",
+              "        style=\"border:none\" />\n",
+              "     <output id=\"result-e44cd95a-7960-4fd1-959f-b61925910ea5\">\n",
+              "      Upload widget is only available when the cell has been executed in the\n",
+              "      current browser session. Please rerun this cell to enable.\n",
+              "      </output>\n",
+              "      <script>// Copyright 2017 Google LLC\n",
+              "//\n",
+              "// Licensed under the Apache License, Version 2.0 (the \"License\");\n",
+              "// you may not use this file except in compliance with the License.\n",
+              "// You may obtain a copy of the License at\n",
+              "//\n",
+              "//      http://www.apache.org/licenses/LICENSE-2.0\n",
+              "//\n",
+              "// Unless required by applicable law or agreed to in writing, software\n",
+              "// distributed under the License is distributed on an \"AS IS\" BASIS,\n",
+              "// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n",
+              "// See the License for the specific language governing permissions and\n",
+              "// limitations under the License.\n",
+              "\n",
+              "/**\n",
+              " * @fileoverview Helpers for google.colab Python module.\n",
+              " */\n",
+              "(function(scope) {\n",
+              "function span(text, styleAttributes = {}) {\n",
+              "  const element = document.createElement('span');\n",
+              "  element.textContent = text;\n",
+              "  for (const key of Object.keys(styleAttributes)) {\n",
+              "    element.style[key] = styleAttributes[key];\n",
+              "  }\n",
+              "  return element;\n",
+              "}\n",
+              "\n",
+              "// Max number of bytes which will be uploaded at a time.\n",
+              "const MAX_PAYLOAD_SIZE = 100 * 1024;\n",
+              "\n",
+              "function _uploadFiles(inputId, outputId) {\n",
+              "  const steps = uploadFilesStep(inputId, outputId);\n",
+              "  const outputElement = document.getElementById(outputId);\n",
+              "  // Cache steps on the outputElement to make it available for the next call\n",
+              "  // to uploadFilesContinue from Python.\n",
+              "  outputElement.steps = steps;\n",
+              "\n",
+              "  return _uploadFilesContinue(outputId);\n",
+              "}\n",
+              "\n",
+              "// This is roughly an async generator (not supported in the browser yet),\n",
+              "// where there are multiple asynchronous steps and the Python side is going\n",
+              "// to poll for completion of each step.\n",
+              "// This uses a Promise to block the python side on completion of each step,\n",
+              "// then passes the result of the previous step as the input to the next step.\n",
+              "function _uploadFilesContinue(outputId) {\n",
+              "  const outputElement = document.getElementById(outputId);\n",
+              "  const steps = outputElement.steps;\n",
+              "\n",
+              "  const next = steps.next(outputElement.lastPromiseValue);\n",
+              "  return Promise.resolve(next.value.promise).then((value) => {\n",
+              "    // Cache the last promise value to make it available to the next\n",
+              "    // step of the generator.\n",
+              "    outputElement.lastPromiseValue = value;\n",
+              "    return next.value.response;\n",
+              "  });\n",
+              "}\n",
+              "\n",
+              "/**\n",
+              " * Generator function which is called between each async step of the upload\n",
+              " * process.\n",
+              " * @param {string} inputId Element ID of the input file picker element.\n",
+              " * @param {string} outputId Element ID of the output display.\n",
+              " * @return {!Iterable<!Object>} Iterable of next steps.\n",
+              " */\n",
+              "function* uploadFilesStep(inputId, outputId) {\n",
+              "  const inputElement = document.getElementById(inputId);\n",
+              "  inputElement.disabled = false;\n",
+              "\n",
+              "  const outputElement = document.getElementById(outputId);\n",
+              "  outputElement.innerHTML = '';\n",
+              "\n",
+              "  const pickedPromise = new Promise((resolve) => {\n",
+              "    inputElement.addEventListener('change', (e) => {\n",
+              "      resolve(e.target.files);\n",
+              "    });\n",
+              "  });\n",
+              "\n",
+              "  const cancel = document.createElement('button');\n",
+              "  inputElement.parentElement.appendChild(cancel);\n",
+              "  cancel.textContent = 'Cancel upload';\n",
+              "  const cancelPromise = new Promise((resolve) => {\n",
+              "    cancel.onclick = () => {\n",
+              "      resolve(null);\n",
+              "    };\n",
+              "  });\n",
+              "\n",
+              "  // Wait for the user to pick the files.\n",
+              "  const files = yield {\n",
+              "    promise: Promise.race([pickedPromise, cancelPromise]),\n",
+              "    response: {\n",
+              "      action: 'starting',\n",
+              "    }\n",
+              "  };\n",
+              "\n",
+              "  cancel.remove();\n",
+              "\n",
+              "  // Disable the input element since further picks are not allowed.\n",
+              "  inputElement.disabled = true;\n",
+              "\n",
+              "  if (!files) {\n",
+              "    return {\n",
+              "      response: {\n",
+              "        action: 'complete',\n",
+              "      }\n",
+              "    };\n",
+              "  }\n",
+              "\n",
+              "  for (const file of files) {\n",
+              "    const li = document.createElement('li');\n",
+              "    li.append(span(file.name, {fontWeight: 'bold'}));\n",
+              "    li.append(span(\n",
+              "        `(${file.type || 'n/a'}) - ${file.size} bytes, ` +\n",
+              "        `last modified: ${\n",
+              "            file.lastModifiedDate ? file.lastModifiedDate.toLocaleDateString() :\n",
+              "                                    'n/a'} - `));\n",
+              "    const percent = span('0% done');\n",
+              "    li.appendChild(percent);\n",
+              "\n",
+              "    outputElement.appendChild(li);\n",
+              "\n",
+              "    const fileDataPromise = new Promise((resolve) => {\n",
+              "      const reader = new FileReader();\n",
+              "      reader.onload = (e) => {\n",
+              "        resolve(e.target.result);\n",
+              "      };\n",
+              "      reader.readAsArrayBuffer(file);\n",
+              "    });\n",
+              "    // Wait for the data to be ready.\n",
+              "    let fileData = yield {\n",
+              "      promise: fileDataPromise,\n",
+              "      response: {\n",
+              "        action: 'continue',\n",
+              "      }\n",
+              "    };\n",
+              "\n",
+              "    // Use a chunked sending to avoid message size limits. See b/62115660.\n",
+              "    let position = 0;\n",
+              "    do {\n",
+              "      const length = Math.min(fileData.byteLength - position, MAX_PAYLOAD_SIZE);\n",
+              "      const chunk = new Uint8Array(fileData, position, length);\n",
+              "      position += length;\n",
+              "\n",
+              "      const base64 = btoa(String.fromCharCode.apply(null, chunk));\n",
+              "      yield {\n",
+              "        response: {\n",
+              "          action: 'append',\n",
+              "          file: file.name,\n",
+              "          data: base64,\n",
+              "        },\n",
+              "      };\n",
+              "\n",
+              "      let percentDone = fileData.byteLength === 0 ?\n",
+              "          100 :\n",
+              "          Math.round((position / fileData.byteLength) * 100);\n",
+              "      percent.textContent = `${percentDone}% done`;\n",
+              "\n",
+              "    } while (position < fileData.byteLength);\n",
+              "  }\n",
+              "\n",
+              "  // All done.\n",
+              "  yield {\n",
+              "    response: {\n",
+              "      action: 'complete',\n",
+              "    }\n",
+              "  };\n",
+              "}\n",
+              "\n",
+              "scope.google = scope.google || {};\n",
+              "scope.google.colab = scope.google.colab || {};\n",
+              "scope.google.colab._files = {\n",
+              "  _uploadFiles,\n",
+              "  _uploadFilesContinue,\n",
+              "};\n",
+              "})(self);\n",
+              "</script> "
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Saving stocks_13_labeled.csv to stocks_13_labeled (3).csv\n"
+          ]
+        }
+      ],
+      "source": [
+        "from google.colab import files\n",
+        "uploaded = files.upload()  # choose stocks_13_labeled.csv"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "\n",
+        "df = pd.read_csv('stocks_13_labeled.csv', parse_dates=['Date'])\n",
+        "df = df.set_index('Date').sort_index()\n",
+        "print(df.shape)\n",
+        "df.head()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 255
+        },
+        "id": "JJWJtF0nmBbU",
+        "outputId": "afc99eca-6d85-41c1-9e41-2d0fe3b31cd5"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "(16302, 8)\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "           Ticker        Open        High         Low       Close    Volume  \\\n",
+              "Date                                                                          \n",
+              "2021-09-01   AAPL  152.830002  154.979996  152.339996  152.509995  80313700   \n",
+              "2021-09-01   TSLA  244.693329  247.330002  243.756668  244.696671  39612900   \n",
+              "2021-09-01    XOM   54.490002   54.759998   53.599998   53.770000  21644100   \n",
+              "2021-09-01    AMD  111.300003  111.849998  109.849998  109.989998  38579600   \n",
+              "2021-09-01   AVGO   49.626999   49.924000   49.289001   49.316002  12586000   \n",
+              "\n",
+              "            Label  Year  \n",
+              "Date                     \n",
+              "2021-09-01    0.0  2021  \n",
+              "2021-09-01    0.0  2021  \n",
+              "2021-09-01    1.0  2021  \n",
+              "2021-09-01    0.0  2021  \n",
+              "2021-09-01    0.0  2021  "
+            ],
+            "text/html": [
+              "\n",
+              "  <div id=\"df-cec3b159-b14c-4314-8dd2-bb54b8bf7274\" class=\"colab-df-container\">\n",
+              "    <div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Ticker</th>\n",
+              "      <th>Open</th>\n",
+              "      <th>High</th>\n",
+              "      <th>Low</th>\n",
+              "      <th>Close</th>\n",
+              "      <th>Volume</th>\n",
+              "      <th>Label</th>\n",
+              "      <th>Year</th>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>Date</th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>2021-09-01</th>\n",
+              "      <td>AAPL</td>\n",
+              "      <td>152.830002</td>\n",
+              "      <td>154.979996</td>\n",
+              "      <td>152.339996</td>\n",
+              "      <td>152.509995</td>\n",
+              "      <td>80313700</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>2021</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2021-09-01</th>\n",
+              "      <td>TSLA</td>\n",
+              "      <td>244.693329</td>\n",
+              "      <td>247.330002</td>\n",
+              "      <td>243.756668</td>\n",
+              "      <td>244.696671</td>\n",
+              "      <td>39612900</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>2021</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2021-09-01</th>\n",
+              "      <td>XOM</td>\n",
+              "      <td>54.490002</td>\n",
+              "      <td>54.759998</td>\n",
+              "      <td>53.599998</td>\n",
+              "      <td>53.770000</td>\n",
+              "      <td>21644100</td>\n",
+              "      <td>1.0</td>\n",
+              "      <td>2021</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2021-09-01</th>\n",
+              "      <td>AMD</td>\n",
+              "      <td>111.300003</td>\n",
+              "      <td>111.849998</td>\n",
+              "      <td>109.849998</td>\n",
+              "      <td>109.989998</td>\n",
+              "      <td>38579600</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>2021</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2021-09-01</th>\n",
+              "      <td>AVGO</td>\n",
+              "      <td>49.626999</td>\n",
+              "      <td>49.924000</td>\n",
+              "      <td>49.289001</td>\n",
+              "      <td>49.316002</td>\n",
+              "      <td>12586000</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>2021</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>\n",
+              "    <div class=\"colab-df-buttons\">\n",
+              "\n",
+              "  <div class=\"colab-df-container\">\n",
+              "    <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-cec3b159-b14c-4314-8dd2-bb54b8bf7274')\"\n",
+              "            title=\"Convert this dataframe to an interactive table.\"\n",
+              "            style=\"display:none;\">\n",
+              "\n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 -960 960 960\">\n",
+              "    <path d=\"M120-120v-720h720v720H120Zm60-500h600v-160H180v160Zm220 220h160v-160H400v160Zm0 220h160v-160H400v160ZM180-400h160v-160H180v160Zm440 0h160v-160H620v160ZM180-180h160v-160H180v160Zm440 0h160v-160H620v160Z\"/>\n",
+              "  </svg>\n",
+              "    </button>\n",
+              "\n",
+              "  <style>\n",
+              "    .colab-df-container {\n",
+              "      display:flex;\n",
+              "      gap: 12px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert {\n",
+              "      background-color: #E8F0FE;\n",
+              "      border: none;\n",
+              "      border-radius: 50%;\n",
+              "      cursor: pointer;\n",
+              "      display: none;\n",
+              "      fill: #1967D2;\n",
+              "      height: 32px;\n",
+              "      padding: 0 0 0 0;\n",
+              "      width: 32px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert:hover {\n",
+              "      background-color: #E2EBFA;\n",
+              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "      fill: #174EA6;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-buttons div {\n",
+              "      margin-bottom: 4px;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert {\n",
+              "      background-color: #3B4455;\n",
+              "      fill: #D2E3FC;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert:hover {\n",
+              "      background-color: #434B5C;\n",
+              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "      fill: #FFFFFF;\n",
+              "    }\n",
+              "  </style>\n",
+              "\n",
+              "    <script>\n",
+              "      const buttonEl =\n",
+              "        document.querySelector('#df-cec3b159-b14c-4314-8dd2-bb54b8bf7274 button.colab-df-convert');\n",
+              "      buttonEl.style.display =\n",
+              "        google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "      async function convertToInteractive(key) {\n",
+              "        const element = document.querySelector('#df-cec3b159-b14c-4314-8dd2-bb54b8bf7274');\n",
+              "        const dataTable =\n",
+              "          await google.colab.kernel.invokeFunction('convertToInteractive',\n",
+              "                                                    [key], {});\n",
+              "        if (!dataTable) return;\n",
+              "\n",
+              "        const docLinkHtml = 'Like what you see? Visit the ' +\n",
+              "          '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
+              "          + ' to learn more about interactive tables.';\n",
+              "        element.innerHTML = '';\n",
+              "        dataTable['output_type'] = 'display_data';\n",
+              "        await google.colab.output.renderOutput(dataTable, element);\n",
+              "        const docLink = document.createElement('div');\n",
+              "        docLink.innerHTML = docLinkHtml;\n",
+              "        element.appendChild(docLink);\n",
+              "      }\n",
+              "    </script>\n",
+              "  </div>\n",
+              "\n",
+              "\n",
+              "    </div>\n",
+              "  </div>\n"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "dataframe",
+              "variable_name": "df",
+              "summary": "{\n  \"name\": \"df\",\n  \"rows\": 16302,\n  \"fields\": [\n    {\n      \"column\": \"Date\",\n      \"properties\": {\n        \"dtype\": \"date\",\n        \"min\": \"2021-09-01 00:00:00\",\n        \"max\": \"2026-08-31 00:00:00\",\n        \"num_unique_values\": 1254,\n        \"samples\": [\n          \"2026-08-31 00:00:00\",\n          \"2022-01-26 00:00:00\",\n          \"2021-11-12 00:00:00\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"Ticker\",\n      \"properties\": {\n        \"dtype\": \"category\",\n        \"num_unique_values\": 13,\n        \"samples\": [\n          \"LLY\",\n          \"GOOGL\",\n          \"AAPL\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"Open\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 234.31156663129224,\n        \"min\": 10.970999717712402,\n        \"max\": 1274.1300048828125,\n        \"num_unique_values\": 13848,\n        \"samples\": [\n          1262.1400146484375,\n          155.77999877929688,\n          136.02000427246094\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"High\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 236.8326843598535,\n        \"min\": 11.734999656677246,\n        \"max\": 1292.6500244140625,\n        \"num_unique_values\": 14006,\n        \"samples\": [\n          145.13999938964844,\n          396.6600036621094,\n          358.989990234375\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"Low\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 231.650103590811,\n        \"min\": 10.812999725341797,\n        \"max\": 1243.22998046875,\n        \"num_unique_values\": 14016,\n        \"samples\": [\n          243.0,\n          164.22999572753906,\n          519.719970703125\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"Close\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 234.28364653752152,\n        \"min\": 11.22700023651123,\n        \"max\": 1280.3399658203125,\n        \"num_unique_values\": 14231,\n        \"samples\": [\n          124.5,\n          104.48999786376952,\n          208.69000244140625\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"Volume\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 108867332,\n        \"min\": 645800,\n        \"max\": 1543911000,\n        \"num_unique_values\": 16076,\n        \"samples\": [\n          15259300,\n          34183000,\n          30630600\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"Label\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 0.4876847089685824,\n        \"min\": 0.0,\n        \"max\": 1.0,\n        \"num_unique_values\": 2,\n        \"samples\": [\n          1.0,\n          0.0\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"Year\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 1,\n        \"min\": 2021,\n        \"max\": 2026,\n        \"num_unique_values\": 6,\n        \"samples\": [\n          2021,\n          2022\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    }\n  ]\n}"
+            }
+          },
+          "metadata": {},
+          "execution_count": 2
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df['ret_5d']   = df.groupby('Ticker')['Close'].pct_change(5)\n",
+        "df['ret_20d']  = df.groupby('Ticker')['Close'].pct_change(20)\n",
+        "df['px_sma20'] = df['Close'] / df['SMA20'] - 1\n",
+        "df['px_sma50'] = df['Close'] / df['SMA50'] - 1\n",
+        "df['ema_sma']  = df['EMA20'] / df['SMA20'] - 1\n",
+        "df['px_vwap']  = df['Close'] / df['VWAP20'] - 1\n",
+        "df['macd_n']   = (df['MACD'] - df['Signal']) / df['Close']\n",
+        "df['vol_20']   = df.groupby('Ticker')['Return'].transform(lambda s: s.rolling(20).std())\n",
+        "df['rel_vol']  = df['Volume'] / df.groupby('Ticker')['Volume'].transform(lambda s: s.rolling(20).mean())\n",
+        "\n",
+        "FEATURES = ['ret_5d','ret_20d','px_sma20','px_sma50','ema_sma',\n",
+        "            'px_vwap','macd_n','vol_20','rel_vol','RSI14']\n",
+        "\n",
+        "df[FEATURES].describe()"
+      ],
+      "metadata": {
+        "id": "V45l0G22mldZ"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model_df = df.dropna(subset=FEATURES + ['Label'])\n",
+        "print(f\"Rows before: {len(df)}, after dropna: {len(model_df)}\")"
+      ],
+      "metadata": {
+        "id": "Wb6xN_-UmrAU"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!pip install xgboost -q"
+      ],
+      "metadata": {
+        "id": "0peBSmbimt_4"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from xgboost import XGBClassifier\n",
+        "from sklearn.metrics import precision_score\n",
+        "\n",
+        "train = model_df[model_df.index < '2024-01-01']\n",
+        "test  = model_df[model_df.index >= '2024-01-01']\n",
+        "\n",
+        "print(f\"Train rows: {len(train)}, Test rows: {len(test)}\")"
+      ],
+      "metadata": {
+        "id": "lvgpA0NAmwm2"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(\"Data starts:\", model_df.index.min())\n",
+        "print(\"Data ends:\", model_df.index.max())"
+      ],
+      "metadata": {
+        "id": "EkadeF_km0nG"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model = XGBClassifier(n_estimators=300, max_depth=4, learning_rate=0.05)\n",
+        "model.fit(train[FEATURES], train['Label'])\n",
+        "\n",
+        "pred = model.predict(test[FEATURES])\n",
+        "\n",
+        "win_rate = test['Label'].mean()\n",
+        "model_precision = precision_score(test['Label'], pred)\n",
+        "\n",
+        "print('Win rate in test years :', round(win_rate, 3))\n",
+        "print('Model precision        :', round(model_precision, 3))"
+      ],
+      "metadata": {
+        "id": "3v46on-lm5qe"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "mom_pred = (test['ret_20d'] > 0).astype(int)\n",
+        "mom_precision = precision_score(test['Label'], mom_pred)\n",
+        "print('Momentum precision:', round(mom_precision, 3))"
+      ],
+      "metadata": {
+        "id": "GIESo2tHm9BO"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import matplotlib.pyplot as plt\n",
+        "\n",
+        "pd.Series({\n",
+        "    'always yes': win_rate,\n",
+        "    'momentum': mom_precision,\n",
+        "    'model': model_precision\n",
+        "}).plot.bar(title='Precision Comparison', color=['gray', 'orange', 'steelblue'])\n",
+        "plt.ylabel('Precision')\n",
+        "plt.ylim(0, 1)\n",
+        "plt.show()"
+      ],
+      "metadata": {
+        "id": "_ZRqQiRFnCbZ"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "proba_train = model.predict_proba(train[FEATURES])[:, 1]\n",
+        "proba_test  = model.predict_proba(test[FEATURES])[:, 1]\n",
+        "\n",
+        "def bullish_score(p):\n",
+        "    return round(200 * (proba_train < p).mean() - 100)\n",
+        "\n",
+        "test = test.assign(Score=[bullish_score(p) for p in proba_test])-\n",
+        "\n",
+        "buckets = pd.cut(test['Score'], [-100, -50, 0, 50, 100])\n",
+        "print(test.groupby(buckets)['Label'].agg(win_rate='mean', n='size'))"
+      ],
+      "metadata": {
+        "id": "kghAs-WunF1P"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd"
+      ],
+      "metadata": {
+        "id": "VPlrWKFgnKg7"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "comparison = pd.DataFrame({\n",
+        "    'Actual': test['Label'].values,\n",
+        "    'Predicted': pred\n",
+        "}, index=test.index)\n",
+        "\n",
+        "comparison.head(20)"
+      ],
+      "metadata": {
+        "id": "j9C037jEnQoL"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from sklearn.metrics import confusion_matrix, classification_report\n",
+        "\n",
+        "cm = confusion_matrix(test['Label'], pred)\n",
+        "print(\"Confusion Matrix:\")\n",
+        "print(\"                Predicted 0   Predicted 1\")\n",
+        "print(f\"Actual 0        {cm[0][0]:>10}   {cm[0][1]:>10}\")\n",
+        "print(f\"Actual 1        {cm[1][0]:>10}   {cm[1][1]:>10}\")\n",
+        "\n",
+        "print(\"\\n\", classification_report(test['Label'], pred, target_names=['No Trade (0)', 'Trade (1)']))"
+      ],
+      "metadata": {
+        "id": "zTIxVWdTnbKW"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "comparison = pd.DataFrame({\n",
+        "    'Actual': test['Label'].values,\n",
+        "    'Predicted': pred\n",
+        "}, index=test.index)"
+      ],
+      "metadata": {
+        "id": "EYX5tsk8n69m"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "correct_predictions = (\n",
+        "    comparison['Actual'] == comparison['Predicted']\n",
+        ").sum()\n",
+        "print(\"Correct predictions:\", correct_predictions)\n",
+        "print(\"Total predictions:\", len(comparison))\n",
+        "print(\"Accuracy:\", round(correct_predictions / len(comparison), 3))"
+      ],
+      "metadata": {
+        "id": "nwxUgYo8oIfE"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(comparison.columns.tolist())"
+      ],
+      "metadata": {
+        "id": "9Xjz-82voMoB"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from google.colab import drive\n",
+        "drive.mount('/content/drive')"
+      ],
+      "metadata": {
+        "id": "8rpvLJKIxxFZ"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from google.colab import files\n",
+        "uploaded = files.upload()"
+      ],
+      "metadata": {
+        "id": "aqQR_Q5cgThG"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "\n",
+        "df = pd.read_csv('stocks_13_labeled.csv', parse_dates=['Date'])\n",
+        "df = df.set_index('Date').sort_index()\n",
+        "print(df.shape)\n",
+        "df.head()\n"
+      ],
+      "metadata": {
+        "id": "hpilIeLCgiyJ"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df['ret_5d']   = df.groupby('Ticker')['Close'].pct_change(5)\n",
+        "df['ret_20d']  = df.groupby('Ticker')['Close'].pct_change(20)\n",
+        "df['px_sma20'] = df['Close'] / df['SMA20'] - 1\n",
+        "df['px_sma50'] = df['Close'] / df['SMA50'] - 1\n",
+        "df['ema_sma']  = df['EMA20'] / df['SMA20'] - 1\n",
+        "df['px_vwap']  = df['Close'] / df['VWAP20'] - 1\n",
+        "df['macd_n']   = (df['MACD'] - df['Signal']) / df['Close']\n",
+        "df['vol_20']   = df.groupby('Ticker')['Return'].transform(lambda s: s.rolling(20).std())\n",
+        "df['rel_vol']  = df['Volume'] / df.groupby('Ticker')['Volume'].transform(lambda s: s.rolling(20).mean())\n",
+        "\n",
+        "FEATURES = ['ret_5d','ret_20d','px_sma20','px_sma50','ema_sma',\n",
+        "            'px_vwap','macd_n','vol_20','rel_vol','RSI14']\n",
+        "\n",
+        "df[FEATURES].describe()"
+      ],
+      "metadata": {
+        "id": "fwa4ljBtguRJ"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(df.columns.tolist())"
+      ],
+      "metadata": {
+        "id": "av85FQa4g4iM"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df['SMA20'] = df['Close'].rolling(20).mean()\n",
+        "df['SMA50'] = df['Close'].rolling(50).mean()\n",
+        "df['EMA20'] = df['Close'].ewm(span=20).mean()\n",
+        "df['VWAP20'] = (df['Close']*df['Volume']).rolling(20).sum() / df['Volume'].rolling(20).sum()"
+      ],
+      "metadata": {
+        "id": "Jsy88xB4hIY2"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df = df.sort_values(['Ticker', 'Date'])  # make sure it's in time order per stock\n",
+        "\n",
+        "df['SMA20']  = df.groupby('Ticker')['Close'].transform(lambda s: s.rolling(20).mean())\n",
+        "df['SMA50']  = df.groupby('Ticker')['Close'].transform(lambda s: s.rolling(50).mean())\n",
+        "df['EMA20']  = df.groupby('Ticker')['Close'].transform(lambda s: s.ewm(span=20, adjust=False).mean())\n",
+        "\n",
+        "# VWAP20 = 20-day rolling volume-weighted average price\n",
+        "df['TP']  = (df['High'] + df['Low'] + df['Close']) / 3          # typical price\n",
+        "df['TPV'] = df['TP'] * df['Volume']\n",
+        "df['VWAP20'] = (\n",
+        "    df.groupby('Ticker')['TPV'].transform(lambda s: s.rolling(20).sum())\n",
+        "    / df.groupby('Ticker')['Volume'].transform(lambda s: s.rolling(20).sum())\n",
+        ")"
+      ],
+      "metadata": {
+        "id": "4omNVllQhMnw"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model_df = df.dropna(subset=FEATURES + ['Label'])\n",
+        "print(f\"Rows before: {len(df)}, after dropna: {len(model_df)}\")"
+      ],
+      "metadata": {
+        "id": "XHzGTI2nhcKB"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "XrPTc1DrhuZc"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
